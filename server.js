@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const knex = require('knex');
-const db = knex({
+const postgres = knex({
   client: 'pg',
   connection: {
     host: '127.0.0.1',
@@ -14,6 +14,11 @@ const db = knex({
 const app = express();
 app.use(express.json());
 app.use(cors());
+
+postgres.select().table('users').then(data => {
+  console.log(data);
+});
+
 
 const database = {
   users: [
