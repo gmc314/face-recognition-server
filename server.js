@@ -3,13 +3,7 @@ const cors = require("cors");
 const knex = require('knex');
 const postgres = knex({
   client: 'pg',
-  connection: {
-    host: '127.0.0.1',
-    port: '',
-    user: '',
-    password: '',
-    database: '',
-  },
+  
 });
 const app = express();
 app.use(express.json());
@@ -56,27 +50,30 @@ app.post('/signin', (req, res) => {
 
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  db('users').insert({
-    email: email,
-    name: name,
-    joined: new Date()
-  }).then(console.log)
-  res.json(database.users[database.users.length - 1])
-})
+  postgres('users')
+    .returning('*')
+    .insert({
+      email: email,
+      name: name,
+      joined: new Date()
+    })
+    .then(user => {
+      res.json(user[0]);
+  }).catch(error => res.status(400).json("registration failed"))
+});
 
 app.get('/profile/:id', (req, res) => {
   const { id } = req.params;
-  let found = false;
-  database.users.forEach(user => {
-    if (user.id === id) {
-      found = true;
-      return res.json(user);
-    }
-  })
-  if (!found) {
-    return res.status(400).json("user not found")
-  }
-})
+  postgres.select('*').from('users').where({id})
+    .then(user => {
+      if (user.length) {
+        res.json(user[0])
+      } else {
+        res.status(400).json('User not found')
+      }      
+    })
+    .catch(error => res.status(400).json("error getting user"));
+});
 
 app.put('/image', (req, res) => {
   const { id } = req.body;
