@@ -1,65 +1,66 @@
 const express = require("express");
 const cors = require("cors");
 const knex = require('knex');
+const bcrypt = require('bcrypt');
+
+const saltRounds = 10;
+
 const postgres = knex({
-  client: 'pg',
-  
+  client: 'pg'
 });
 const app = express();
 app.use(express.json());
 app.use(cors());
 
-postgres.select().table('users').then(data => {
-  console.log(data);
+app.get('/', (req, res) => {
+  res.send('success');
 });
 
-
-const database = {
-  users: [
-    {
-      id: "123",
-      name: "Dan",
-      email: "dan@gmail.com",
-      password: "dan",
-      entries: 0,
-      joined: new Date()
-    },
-    {
-      id: "1234",
-      name: "Sal",
-      email: "sal@gmail.com",
-      password: "sal",
-      entries: 0,
-      joined: new Date()
-    }
-  ]
-}
-
-app.get('/', (req, res) => {
-  res.send(database.users);
-})
-
 app.post('/signin', (req, res) => {
-  if (req.body.email === database.users[0].email && 
-      req.body.password === database.users[0].password) {
-      res.json(database.users[0]);
+  const { email, password } = req.body
+  postgres.select('email', 'hash').from('login')
+  .where('email', '=', email)
+  .then(data => {
+    const isValid = bcrypt.compareSync(password, data[0].hash);
+    if (isValid) {
+      return postgres.select('*').from('users')
+      .where('email', '=', email)
+      .then(user => {
+        res.json(user[0]);
+      })
+      .catch(error => res.status(400).json('error getting user'));
     } else {
-      res.status(400).json('error');
+      res.status(400).json('error signing in')
     }
-})
+  })
+  .catch(error => res.status(400).json('error signing in'))
+});
 
 app.post('/register', (req, res) => {
   const { name, email, password } = req.body;
-  postgres('users')
-    .returning('*')
-    .insert({
-      email: email,
-      name: name,
-      joined: new Date()
+  const hash = bcrypt.hashSync(password, saltRounds);
+  postgres.transaction(trx => {
+    trx.insert({hash, email})
+    .into("login")
+    .returning("email")
+    .then(loginEmail => {
+      return trx('users')
+        .returning('*')
+        .insert({
+          email: loginEmail[0].email,
+          name,
+          joined: new Date()
+        })
+        .then(user => {
+          res.json(user[0])
+        })
     })
-    .then(user => {
-      res.json(user[0]);
-  }).catch(error => res.status(400).json("registration failed"))
+    .then(trx.commit)
+    .catch(trx.rollback)
+  })
+  .catch(error => res.status(400).json("registration failed"))
+
+
 });
 
 app.get('/profile/:id', (req, res) => {
@@ -77,18 +78,14 @@ app.get('/profile/:id', (req, res) => {
 
 app.put('/image', (req, res) => {
   const { id } = req.body;
-  let found = false;
-  database.users.forEach(user => {
-    if (user.id === id) {
-      user.entries++; 
-      found = true;
-      return res.json(user.entries);
-    }
+  postgres("users").where("id", "=", id)
+  .increment("entries", 1)
+  .returning('entries')
+  .then(entries => {
+    res.json(entries[0])
   })
-  if (!found) {
-    return res.status(400).json("user not found")
-  }
-})
+  .catch(error => res.status(400).json("entries not found"))
+});
 
 
 app.listen(3000, () => {
