@@ -2,7 +2,7 @@ const handleImage = (req, res, postgres) => {
   const { id } = req.body;
   postgres("users").where("id", "=", id)
   .increment("entries", 1)
-  .returning('entries')
+  .returning("entries")
   .then(entries => {
     res.json(entries[0])
   })
