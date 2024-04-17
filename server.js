@@ -21,5 +21,6 @@ app.post("/signin", (req, res) => {signin.handleSignin(req, res, postgres, bcryp
 app.post("/register", (req, res) => {register.handleRegister(req, res, postgres, bcrypt)});
 app.get("/profile/:id", (req, res) => {profile.handleProfile(req, res, postgres)});
 app.put("/image", (req, res) => {image.handleImage(req, res, postgres)});
+app.post('/imageurl', (req, res) => { image.handleApiCall(req, res)});
 
 app.listen(3000, () => {console.log("app running on 3000")});
