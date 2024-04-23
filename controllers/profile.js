@@ -12,5 +12,5 @@ const handleProfile = (req, res, postgres) => {
 };
 
 module.exports = {
-  handleProfile: handleProfile
+  handleProfile
 };

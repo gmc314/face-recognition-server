@@ -25,5 +25,5 @@ const handleSignin = (req, res, postgres, bcrypt) => {
 };
 
 module.exports = {
-    handleSignin: handleSignin
+    handleSignin
 };

@@ -1,8 +1,9 @@
+require("dotenv").config();
 const Clarifai = require('clarifai');
 const app = new Clarifai.App({
-  apiKey: ""
+  apiKey: process.env.apiKey
  });
- 
+
 const handleImage = (req, res, postgres) => {
   const { id } = req.body;
   postgres("users").where("id", "=", id)

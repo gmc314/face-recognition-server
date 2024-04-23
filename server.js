@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
@@ -9,7 +10,14 @@ const profile = require("./controllers/profile");
 const image = require("./controllers/image");
 
 const postgres = knex({
-  client: "pg"
+  client: "pg",
+  connection: {
+    host: process.env.host,
+    port: process.env.port,
+    user: process.env.user,
+    password: process.env.password,
+    database: process.env.database,
+  },
 });
 
 const app = express();

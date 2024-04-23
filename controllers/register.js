@@ -28,6 +28,6 @@ const handleRegister = (req, res, postgres, bcrypt) => {
 };
 
 module.exports = {
-  handleRegister: handleRegister
+  handleRegister
 };
 
