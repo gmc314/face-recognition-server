@@ -27,4 +27,7 @@ const handleRegister = (req, res, postgres, bcrypt) => {
   .catch(error => res.status(400).json("registration failed"))
 };
 
-export default handleRegister;
+module.exports = {
+  handleRegister
+};
+

@@ -4,7 +4,7 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const knex = require("knex");
 
-import handleRegister from "./controllers/register.js"; 
+const register = require("./controllers/register");
 const signin = require("./controllers/signin");
 const profile = require("./controllers/profile");
 const image = require("./controllers/image");
@@ -26,7 +26,7 @@ app.use(cors());
 
 app.get("/", (req, res) => {res.send("success")});
 app.post("/signin", (req, res) => {signin.handleSignin(req, res, postgres, bcrypt)});
-app.post("/register", (req, res) => {handleRegister(req, res, postgres, bcrypt)});
+app.post("/register", (req, res) => {register.handleRegister(req, res, postgres, bcrypt)});
 app.get("/profile/:id", (req, res) => {profile.handleProfile(req, res, postgres)});
 app.put("/image", (req, res) => {image.handleImage(req, res, postgres)});
 app.post('/imageurl', (req, res) => { image.handleApiCall(req, res)});
